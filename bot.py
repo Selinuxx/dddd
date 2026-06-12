@@ -63,13 +63,33 @@ async def sync_rank_role(member: discord.Member, rank_tier: int):
 
 
 @bot.event
-async def on_ready():
-    logger.info(f"🎮 Бот запущен: {bot.user} (ID: {bot.user.id})")
-
-    # Загружаем коги
+async def setup_hook():
     for cog in COGS:
         try:
             await bot.load_extension(cog)
+            logger.info(f"  ✅ Загружен: {cog}")
+        except Exception as e:
+            logger.error(f"  ❌ Ошибка загрузки {cog}: {e}")
+    await bot.tree.sync()
+    logger.info("✅ Команды синхронизированы")
+
+bot.setup_hook = setup_hook
+
+@bot.event
+async def on_ready():
+    logger.info(f"🎮 Бот запущен: {bot.user} (ID: {bot.user.id})")
+    for guild in bot.guilds:
+        try:
+            invites = await guild.fetch_invites()
+            invite_cache[guild.id] = {inv.code: inv.uses for inv in invites}
+        except Exception as e:
+            logger.warning(f"Нет прав на инвайты в {guild.name}: {e}")
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.playing,
+            name="Dota 2 | /profile /lfg /tournaments"
+        )
+    )
             logger.info(f"  ✅ Загружен: {cog}")
         except Exception as e:
             logger.error(f"  ❌ Ошибка загрузки {cog}: {e}")
