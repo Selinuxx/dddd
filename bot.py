@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 import os
+import sys
 from database import Database, get_rank_name, get_rank_emoji
 
 logging.basicConfig(
@@ -265,9 +266,12 @@ async def help_cmd(interaction: discord.Interaction):
     embed.set_footer(text="💎 Bloodstone зарабатывается за инвайты. 🏆 Aegis — за активность.")
     await interaction.response.send_message(embed=embed)
 
+TOKEN = os.getenv("DISCORD_TOKEN") or os.getenv("TOKEN")
+print(f"DEBUG env keys: {list(os.environ.keys())}", flush=True)
+print(f"DEBUG token found: {bool(TOKEN)}", flush=True)
 
-TOKEN = os.getenv("DISCORD_TOKEN")
 if not TOKEN:
-    raise ValueError("Переменная DISCORD_TOKEN не задана! Создай .env файл или задай переменную окружения.")
+    print("FATAL: токен не найден!", flush=True)
+    sys.exit(1)
 
 bot.run(TOKEN)
